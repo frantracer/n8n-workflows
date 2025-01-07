@@ -108,7 +108,7 @@
             "string": [
               {
                 "name": "system_command",
-                "value": "=Eres un asistente para escribir en redes sociales. Responde en español. Puedes usar emojis, pero no muchos. Usa lenguaje inclusivo usando as/os o a/o si es necesario. Las respuestas deben ser de 240 caracteres máximo. No uses hashtags"
+                "value": "=Eres un asistente para escribir en redes sociales. Responde en español. Puedes usar emojis, pero no muchos. Usa lenguaje inclusivo usando as/os o a/o si es necesario. Las respuestas deben ser de 240 caracteres máximo. No uses hashtags. No uses la palabra emocionante"
               },
               {
                 "name": "known_users",
@@ -131,64 +131,8 @@
       },
       {
         "parameters": {
-          "text": "{{ $json.reply }}",
-          "additionalFields": {}
-        },
-        "type": "n8n-nodes-base.twitter",
-        "typeVersion": 2,
-        "position": [
-          -220,
-          660
-        ],
-        "id": "383ef0c2-e4c9-40a9-8e59-5e5e4b82787f",
-        "name": "X",
-        "credentials": {
-          "twitterOAuth2Api": {
-            "id": "Fh1tuwu5mQ3hkvaH",
-            "name": "Frantracer X account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "resource": "chat",
-          "model": "gpt-4o-mini",
-          "prompt": {
-            "messages": [
-              {
-                "content": "={{ $json.message }}\n\n{{ $json.reply ? \"Reestructura el siguiente mensaje\" : \"\" }}\n{{ $json.reply }}"
-              },
-              {
-                "role": "system",
-                "content": "={{ $json.system_command }}"
-              }
-            ]
-          },
-          "options": {
-            "maxTokens": "={{ $json.token_length }}",
-            "temperature": "={{ $json.model_temperature }}"
-          },
-          "requestOptions": {}
-        },
-        "id": "b12a1c97-e061-4469-b7aa-e5d12dedfceb",
-        "name": "Nuevo",
-        "type": "n8n-nodes-base.openAi",
-        "position": [
-          -220,
-          380
-        ],
-        "typeVersion": 1,
-        "credentials": {
-          "openAiApi": {
-            "id": "pMB6ph5eYqxUQ7sA",
-            "name": "Python Telegram Bot"
-          }
-        }
-      },
-      {
-        "parameters": {
           "chatId": "={{ $json.chat_id }}",
-          "text": "=Las acciones posibles son:\n/ayuda\n/nuevo\n/publicar",
+          "text": "=Las acciones posibles son:\n/help\n/new\n/send",
           "additionalFields": {
             "parse_mode": "Markdown"
           }
@@ -199,29 +143,6 @@
         "position": [
           -220,
           80
-        ],
-        "typeVersion": 1,
-        "credentials": {
-          "telegramApi": {
-            "id": "oxwWtqdUiLMxpfd8",
-            "name": "FrantracerCMbot"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "chatId": "={{ $('Command switch').first().json.chat_id }}",
-          "text": "=Publicado en X",
-          "additionalFields": {
-            "parse_mode": "Markdown"
-          }
-        },
-        "id": "2b501fc3-376a-4b0b-b36f-6b4fdd1957c1",
-        "name": "Published message",
-        "type": "n8n-nodes-base.telegram",
-        "position": [
-          60,
-          660
         ],
         "typeVersion": 1,
         "credentials": {
@@ -271,7 +192,7 @@
                     {
                       "id": "b4471a7f-d00f-467f-abd2-685617a21f14",
                       "leftValue": "={{ $json.command }}",
-                      "rightValue": "/ayuda",
+                      "rightValue": "/help",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -281,7 +202,7 @@
                   "combinator": "and"
                 },
                 "renameOutput": true,
-                "outputKey": "/ayuda"
+                "outputKey": "help"
               },
               {
                 "conditions": {
@@ -294,7 +215,7 @@
                   "conditions": [
                     {
                       "leftValue": "={{ $json.command }}",
-                      "rightValue": "/nuevo",
+                      "rightValue": "/new",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -304,7 +225,7 @@
                   "combinator": "and"
                 },
                 "renameOutput": true,
-                "outputKey": "/nuevo"
+                "outputKey": "new"
               },
               {
                 "conditions": {
@@ -318,7 +239,7 @@
                     {
                       "id": "031b9ce6-c2c7-4930-aa08-bc7ebe262d86",
                       "leftValue": "={{ $json.command }}",
-                      "rightValue": "/enviar",
+                      "rightValue": "/send",
                       "operator": {
                         "type": "string",
                         "operation": "equals"
@@ -328,12 +249,12 @@
                   "combinator": "and"
                 },
                 "renameOutput": true,
-                "outputKey": "/enviar"
+                "outputKey": "send"
               }
             ]
           },
           "options": {
-            "fallbackOutput": 0
+            "fallbackOutput": "extra"
           }
         },
         "type": "n8n-nodes-base.switch",
@@ -359,6 +280,85 @@
         ],
         "id": "f71a58a1-c1e2-4622-808c-0a04f153382b",
         "name": "Merge"
+      },
+      {
+        "parameters": {
+          "resource": "chat",
+          "model": "gpt-4o-mini",
+          "prompt": {
+            "messages": [
+              {
+                "content": "={{ $json.message }}\n\n{{ $json.reply ? \"Reestructura el siguiente mensaje\" : \"\" }}\n{{ $json.reply }}"
+              },
+              {
+                "role": "system",
+                "content": "={{ $json.system_command }}"
+              }
+            ]
+          },
+          "options": {
+            "maxTokens": "={{ $json.token_length }}",
+            "temperature": "={{ $json.model_temperature }}"
+          },
+          "requestOptions": {}
+        },
+        "id": "b12a1c97-e061-4469-b7aa-e5d12dedfceb",
+        "name": "New chat",
+        "type": "n8n-nodes-base.openAi",
+        "position": [
+          -220,
+          380
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "openAiApi": {
+            "id": "pMB6ph5eYqxUQ7sA",
+            "name": "Python Telegram Bot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "text": "={{ $json.reply }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.twitter",
+        "typeVersion": 2,
+        "position": [
+          -220,
+          660
+        ],
+        "id": "383ef0c2-e4c9-40a9-8e59-5e5e4b82787f",
+        "name": "X publish",
+        "credentials": {
+          "twitterOAuth2Api": {
+            "id": "Fh1tuwu5mQ3hkvaH",
+            "name": "Frantracer X account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Command switch').first().json.chat_id }}",
+          "text": "=Publicado en X",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "2b501fc3-376a-4b0b-b36f-6b4fdd1957c1",
+        "name": "Message published",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          60,
+          660
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "telegramApi": {
+            "id": "oxwWtqdUiLMxpfd8",
+            "name": "FrantracerCMbot"
+          }
+        }
       }
     ],
     "connections": {
@@ -428,28 +428,6 @@
           ]
         ]
       },
-      "X": {
-        "main": [
-          [
-            {
-              "node": "Published message",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Nuevo": {
-        "main": [
-          [
-            {
-              "node": "Send message",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
       "Command switch": {
         "main": [
           [
@@ -461,14 +439,21 @@
           ],
           [
             {
-              "node": "Nuevo",
+              "node": "New chat",
               "type": "main",
               "index": 0
             }
           ],
           [
             {
-              "node": "X",
+              "node": "X publish",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Send help message",
               "type": "main",
               "index": 0
             }
@@ -480,6 +465,28 @@
           [
             {
               "node": "Parser",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "New chat": {
+        "main": [
+          [
+            {
+              "node": "Send message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "X publish": {
+        "main": [
+          [
+            {
+              "node": "Message published",
               "type": "main",
               "index": 0
             }
