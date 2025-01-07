@@ -1,0 +1,491 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "updates": [
+            "*"
+          ],
+          "additionalFields": {}
+        },
+        "id": "964ee121-10f2-4ee2-972d-a10c36a039ec",
+        "name": "Telegram Trigger",
+        "type": "n8n-nodes-base.telegramTrigger",
+        "position": [
+          -1920,
+          400
+        ],
+        "webhookId": "51942fbb-ca0e-4ec4-9423-5fcc7d3c4281",
+        "typeVersion": 1,
+        "credentials": {
+          "telegramApi": {
+            "id": "oxwWtqdUiLMxpfd8",
+            "name": "FrantracerCMbot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "c9552f5d-9aaf-4150-951e-97218213f025",
+                "leftValue": "={{ $json.is_known_user }}",
+                "rightValue": "frantracer",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -900,
+          400
+        ],
+        "id": "2cd38fbe-7ba3-4a03-b7ab-30965e2613f8",
+        "name": "Is known user"
+      },
+      {
+        "parameters": {
+          "operation": "sendChatAction",
+          "chatId": "={{ $json.message.from.id }}"
+        },
+        "id": "10700fb1-3d9f-4635-a95f-2cc3e83e265b",
+        "name": "Send Typing action",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          -1620,
+          560
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "telegramApi": {
+            "id": "oxwWtqdUiLMxpfd8",
+            "name": "FrantracerCMbot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "language": "python",
+          "pythonCode": "from dataclasses import dataclass, asdict, field\n\n@dataclass\nclass Output:\n  model_temperature: int = 0.8\n  token_length: int = 250\n  system_command: str = \"\"\n  username: str = \"\"\n  message: str = \"\"\n  reply: str = \"\"\n  known_users: list[str] = field(default_factory=list)\n  is_known_user: bool = False\n  command: str = \"\"\n  chat_id: int = -1\n\noutput = Output()\n\nfor item in _input.all():\n  input_json = item.json.to_py()\n  if (data := input_json.get(\"model_temperature\")) is not None:\n    output.model_temperature = data\n  if (data := input_json.get(\"token_length\")) is not None:\n    output.token_length = data\n  if (data := input_json.get(\"system_command\")) is not None:\n    output.system_command = data\n  if (data := input_json.get(\"message\", {}).get(\"from\", {}).get(\"username\")) is not None:\n    output.username = data\n  if (data := input_json.get(\"message\", {}).get(\"text\")) is not None:\n    output.message = data\n  if (data := input_json.get(\"message\", {}).get(\"reply_to_message\", {}).get(\"text\")) is not None:\n    output.reply = data\n  if (data := input_json.get(\"known_users\")) is not None:\n    output.known_users = data.split(\",\")\n  if (data := input_json.get(\"message\", {}).get(\"from\", {}).get(\"id\")) is not None:\n    output.chat_id = data\n\noutput.is_known_user = output.username in output.known_users\n\nwords = output.message.split(\" \")\nif len(words) > 0 and words[0].startswith(\"/\"):\n  output.command = words[0]\n  output.message = words[1:].join(\" \") if len(words) > 1 else \"\"\n\nreturn asdict(output)\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1120,
+          400
+        ],
+        "id": "fee2e3c2-01a7-42a7-83ee-79c6a9638daf",
+        "name": "Parser"
+      },
+      {
+        "parameters": {
+          "values": {
+            "number": [
+              {
+                "name": "model_temperature",
+                "value": 0.8
+              },
+              {
+                "name": "token_length",
+                "value": 500
+              }
+            ],
+            "string": [
+              {
+                "name": "system_command",
+                "value": "=Eres un asistente para escribir en redes sociales. Responde en español. Puedes usar emojis, pero no muchos. Usa lenguaje inclusivo usando as/os o a/o si es necesario. Las respuestas deben ser de 240 caracteres máximo. No uses hashtags"
+              },
+              {
+                "name": "known_users",
+                "value": "frantracer"
+              }
+            ]
+          },
+          "options": {
+            "dotNotation": false
+          }
+        },
+        "id": "f6cc393f-5a36-41ab-83a8-93a389bb6988",
+        "name": "Settings",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          -1620,
+          260
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "text": "{{ $json.reply }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.twitter",
+        "typeVersion": 2,
+        "position": [
+          -220,
+          660
+        ],
+        "id": "383ef0c2-e4c9-40a9-8e59-5e5e4b82787f",
+        "name": "X",
+        "credentials": {
+          "twitterOAuth2Api": {
+            "id": "Fh1tuwu5mQ3hkvaH",
+            "name": "Frantracer X account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "chat",
+          "model": "gpt-4o-mini",
+          "prompt": {
+            "messages": [
+              {
+                "content": "={{ $json.message }}\n\n{{ $json.reply ? \"Reestructura el siguiente mensaje\" : \"\" }}\n{{ $json.reply }}"
+              },
+              {
+                "role": "system",
+                "content": "={{ $json.system_command }}"
+              }
+            ]
+          },
+          "options": {
+            "maxTokens": "={{ $json.token_length }}",
+            "temperature": "={{ $json.model_temperature }}"
+          },
+          "requestOptions": {}
+        },
+        "id": "b12a1c97-e061-4469-b7aa-e5d12dedfceb",
+        "name": "Nuevo",
+        "type": "n8n-nodes-base.openAi",
+        "position": [
+          -220,
+          380
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "openAiApi": {
+            "id": "pMB6ph5eYqxUQ7sA",
+            "name": "Python Telegram Bot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $json.chat_id }}",
+          "text": "=Las acciones posibles son:\n/ayuda\n/nuevo\n/publicar",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "b4eeb9b2-1a59-40f6-92cb-a9cdd697c969",
+        "name": "Send help message",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          -220,
+          80
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "telegramApi": {
+            "id": "oxwWtqdUiLMxpfd8",
+            "name": "FrantracerCMbot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Command switch').first().json.chat_id }}",
+          "text": "=Publicado en X",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "2b501fc3-376a-4b0b-b36f-6b4fdd1957c1",
+        "name": "Published message",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          60,
+          660
+        ],
+        "typeVersion": 1,
+        "credentials": {
+          "telegramApi": {
+            "id": "oxwWtqdUiLMxpfd8",
+            "name": "FrantracerCMbot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Command switch').first().json.chat_id }}",
+          "text": "={{ $json.message.content }}",
+          "additionalFields": {
+            "parse_mode": "Markdown"
+          }
+        },
+        "id": "0bdf82f8-d045-4e5a-b325-be63ad5cce9b",
+        "name": "Send message",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          60,
+          380
+        ],
+        "typeVersion": 1,
+        "executeOnce": false,
+        "credentials": {
+          "telegramApi": {
+            "id": "oxwWtqdUiLMxpfd8",
+            "name": "FrantracerCMbot"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "b4471a7f-d00f-467f-abd2-685617a21f14",
+                      "leftValue": "={{ $json.command }}",
+                      "rightValue": "/ayuda",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "/ayuda"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.command }}",
+                      "rightValue": "/nuevo",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "/nuevo"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "031b9ce6-c2c7-4930-aa08-bc7ebe262d86",
+                      "leftValue": "={{ $json.command }}",
+                      "rightValue": "/enviar",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "/enviar"
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": 0
+          }
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          -580,
+          380
+        ],
+        "id": "e4490a35-c215-4f3b-8e9b-ce7dd70be531",
+        "name": "Command switch",
+        "notesInFlow": true,
+        "alwaysOutputData": false
+      },
+      {
+        "parameters": {
+          "numberInputs": 3
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3,
+        "position": [
+          -1340,
+          400
+        ],
+        "id": "f71a58a1-c1e2-4622-808c-0a04f153382b",
+        "name": "Merge"
+      }
+    ],
+    "connections": {
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "Send Typing action",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            },
+            {
+              "node": "Settings",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is known user": {
+        "main": [
+          [
+            {
+              "node": "Command switch",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Send Typing action": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "Parser": {
+        "main": [
+          [
+            {
+              "node": "Is known user",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Settings": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "X": {
+        "main": [
+          [
+            {
+              "node": "Published message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Nuevo": {
+        "main": [
+          [
+            {
+              "node": "Send message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Command switch": {
+        "main": [
+          [
+            {
+              "node": "Send help message",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Nuevo",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "X",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Parser",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "pinData": {}
+  }
