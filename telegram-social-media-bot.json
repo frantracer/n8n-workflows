@@ -81,7 +81,7 @@
       {
         "parameters": {
           "language": "python",
-          "pythonCode": "from dataclasses import dataclass, asdict, field\n\n@dataclass\nclass Output:\n  model_temperature: int = 0.8\n  token_length: int = 250\n  system_command: str = \"\"\n  username: str = \"\"\n  message: str = \"\"\n  reply: str = \"\"\n  known_users: list[str] = field(default_factory=list)\n  is_known_user: bool = False\n  command: str = \"\"\n  chat_id: int = -1\n\noutput = Output()\n\nfor item in _input.all():\n  input_json = item.json.to_py()\n  if (data := input_json.get(\"model_temperature\")) is not None:\n    output.model_temperature = data\n  if (data := input_json.get(\"token_length\")) is not None:\n    output.token_length = data\n  if (data := input_json.get(\"system_command\")) is not None:\n    output.system_command = data\n  if (data := input_json.get(\"message\", {}).get(\"from\", {}).get(\"username\")) is not None:\n    output.username = data\n  if (data := input_json.get(\"message\", {}).get(\"text\")) is not None:\n    output.message = data\n  if (data := input_json.get(\"message\", {}).get(\"reply_to_message\", {}).get(\"text\")) is not None:\n    output.reply = data\n  if (data := input_json.get(\"known_users\")) is not None:\n    output.known_users = data.split(\",\")\n  if (data := input_json.get(\"message\", {}).get(\"from\", {}).get(\"id\")) is not None:\n    output.chat_id = data\n\noutput.is_known_user = output.username in output.known_users\n\nwords = output.message.split(\" \")\nif len(words) > 0 and words[0].startswith(\"/\"):\n  output.command = words[0]\n  output.message = words[1:].join(\" \") if len(words) > 1 else \"\"\n\nreturn asdict(output)\n"
+          "pythonCode": "from dataclasses import dataclass, asdict, field\n\n@dataclass\nclass Output:\n  model_temperature: int = 0.8\n  token_length: int = 250\n  system_command: str = \"\"\n  username: str = \"\"\n  message: str = \"\"\n  reply: str = \"\"\n  known_users: list[str] = field(default_factory=list)\n  is_known_user: bool = False\n  command: str = \"\"\n  chat_id: int = -1\n\noutput = Output()\n\nfor item in _input.all():\n  input_json = item.json.to_py()\n  if (data := input_json.get(\"model_temperature\")) is not None:\n    output.model_temperature = data\n  if (data := input_json.get(\"token_length\")) is not None:\n    output.token_length = data\n  if (data := input_json.get(\"system_command\")) is not None:\n    output.system_command = data\n  if (data := input_json.get(\"message\", {}).get(\"from\", {}).get(\"username\")) is not None:\n    output.username = data\n  if (data := input_json.get(\"message\", {}).get(\"text\")) is not None:\n    output.message = data\n  if (data := input_json.get(\"message\", {}).get(\"reply_to_message\", {}).get(\"text\")) is not None:\n    output.reply = data\n  if (data := input_json.get(\"known_users\")) is not None:\n    output.known_users = data.split(\",\")\n  if (data := input_json.get(\"message\", {}).get(\"from\", {}).get(\"id\")) is not None:\n    output.chat_id = data\n\noutput.is_known_user = output.username in output.known_users\n\nwords = output.message.split(\" \")\nif len(words) > 0 and words[0].startswith(\"/\"):\n  output.command = words[0]\n  output.message = \" \".join(words[1:]) if len(words) > 1 else \"\"\n\nreturn asdict(output)\n"
         },
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
@@ -487,5 +487,38 @@
         ]
       }
     },
-    "pinData": {}
+    "pinData": {
+      "Telegram Trigger": [
+        {
+          "update_id": 319136198,
+          "message": {
+            "message_id": 6,
+            "from": {
+              "id": 13692312,
+              "is_bot": false,
+              "first_name": "Fran",
+              "last_name": "Trapero",
+              "username": "frantracer",
+              "language_code": "ca"
+            },
+            "chat": {
+              "id": 13692312,
+              "first_name": "Fran",
+              "last_name": "Trapero",
+              "username": "frantracer",
+              "type": "private"
+            },
+            "date": 1736282944,
+            "text": "/nuevo habla sobre la curación de contenido",
+            "entities": [
+              {
+                "offset": 0,
+                "length": 6,
+                "type": "bot_command"
+              }
+            ]
+          }
+        }
+      ]
+    }
   }
